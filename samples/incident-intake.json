@@ -1,0 +1,5 @@
+{
+  "email": "customer@example.com",
+  "subject": "Checkout page returns 500 for all card payments",
+  "message": "Since this morning every payment attempt fails with a server error."
+}
