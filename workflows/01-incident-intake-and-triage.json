@@ -24,7 +24,7 @@
             {
               "id": "2e91449c-0588-4bc1-8550-1143674bb408",
               "name": "incident_id",
-              "value": "={{ 'INC-' + $now.format('yyyy') + '-' + Math.floor(1000 + Math.random() * 9000) }}",
+              "value": "={{ 'INC-' + $now.format('yyyy') + '-' + String($execution.id).padStart(6, '0') }}",
               "type": "string"
             },
             {
