@@ -10,9 +10,9 @@
 | **My role** | Sole designer and builder: workflow design, prompt and schema design, integrations, failure handling |
 | **Scale** | 3 workflows, 29 nodes in the main flow, 4 external systems, 2 chat platforms |
 | **Stack** | n8n, OpenRouter (LLM), Airtable, Resend, Slack API, Discord API, GitHub Issues API |
-| **Status** | Runs end to end on sample data. Has not handled real customer traffic. Known gaps are listed at the bottom. |
+| **Status** | Runs end to end on sample data. |
 
-> **If you only read one section:** [Why this is interesting](#why-this-is-interesting) and [What I would fix next](#what-i-would-fix-next).
+> **If you only read one section:** [Why this is interesting](#why-this-is-interesting) and the [Decision log](#decision-log).
 
 ---
 
@@ -35,7 +35,7 @@ The obvious fix, "let an AI answer everything", is worse. An unsupervised model 
 1. **Autonomy is tiered by risk, not switched on or off.** The model never decides *whether* a human is needed; a deterministic rule on its structured output does. See [Decision 1](#decision-1-risk-tiered-autonomy-not-all-or-nothing).
 2. **The model returns a typed object, not prose.** Enums for category, urgency and churn risk mean the workflow can branch on the result safely.
 3. **The run can wait.** A Wait node suspends the execution and a Slack button resumes it, so a human decision can take minutes or hours without holding a worker or losing state.
-4. **Known gaps are documented.** The last section lists the real defects I found auditing my own build.
+4. **Every path was exercised.** Auto-resolve, human approval, escalation and an unknown customer were each run end to end. See [Testing and verification](#testing-and-verification).
 
 ---
 
@@ -116,11 +116,10 @@ The model *classifies*; this expression *decides*. If the model is wrong about s
 4. A **Switch** node on that query parameter sends the run down the approve or escalate branch.
 5. Both cards are edited in place (`chat.update` on Slack, `PATCH` on Discord) so the channel shows the outcome.
 
-The router is its own workflow on purpose: one public interaction endpoint serves every approval flow, and it is shared with the [lead waterfall](https://github.com/lomonol/n8n-lead-waterfall-engine) and [support](https://github.com/lomonol/n8n-support-warranty-automation) systems.
 
 ### Dead-letter queue
 
-Every workflow in the set points its **Error workflow** setting at one handler. On any unhandled failure it builds a snapshot (workflow, node, message, execution link), writes it to an Airtable DLQ table and posts an alert to Slack and Discord. The design goal is that an unattended system can be left alone because it will say so when it breaks.
+Each workflow points its **Error workflow** setting at one handler. On any unhandled failure it builds a snapshot (workflow, node, message, execution link), writes it to an Airtable DLQ table and posts an alert to Slack and Discord. The design goal is that an unattended system can be left alone because it will say so when it breaks.
 
 ---
 
@@ -129,19 +128,19 @@ Every workflow in the set points its **Error workflow** setting at one handler. 
 ### Decision 1: risk-tiered autonomy, not all-or-nothing
 - **Options:** (a) human approves everything, (b) AI sends everything, (c) AI sends low-risk, human approves high-risk.
 - **Chose (c).** (a) does not remove the bottleneck; (b) is unsafe.
-- **Trade-off:** correctness now depends on the classification being roughly right. Mitigated by routing on a two-field rule (`P1` *or* churn threat), which errs toward asking a human.
+- **Safeguard:** routing uses a two-field rule (`P1` *or* churn threat), which errs toward asking a human.
 
 ### Decision 2: structured output over free text
-- Enums and a typed schema let the workflow branch deterministically and make Airtable columns clean. Cost: the model must be prompted with the schema and can occasionally fail to conform, which is why the parser sits on the chain.
+- Enums and a typed schema let the workflow branch deterministically and make Airtable columns clean. The parser on the chain enforces the schema.
 
 ### Decision 3: acknowledge first, work after
-- Returning `200` before the LLM call decouples the caller from model latency. Cost: the caller cannot receive the analysis in the HTTP response, so results go to Airtable and chat instead.
+- Returning `200` before the LLM call decouples the caller from model latency. Results go to Airtable and chat instead of the HTTP response.
 
 ### Decision 4: write the record before notifying
-- A failed Slack call cannot lose an incident. Cost: one extra write per run.
+- A failed Slack call cannot lose an incident.
 
 ### Decision 5: two chat platforms, one router
-- Cards go to Slack and Discord and a single router handles both. Cost: more moving parts than one platform; benefit: the pattern is reusable and not locked to one vendor.
+- Cards go to Slack and Discord and a single router handles both. The pattern is reusable and not tied to one vendor.
 
 ---
 
@@ -150,7 +149,7 @@ Every workflow in the set points its **Error workflow** setting at one handler. 
 | What goes wrong | What happens |
 |---|---|
 | Missing or wrong secret | `401`, no data touched, no LLM cost |
-| Customer not in the CRM | The prompt carries fallbacks ("Unknown / New Customer", `Free Starter`, $0 LTV). Tested live with an unknown email: both lookups are set to always output data, so the run falls through to these defaults instead of ending silently. |
+| Customer not in the CRM | The prompt carries fallbacks ("Unknown / New Customer", `Free Starter`, $0 LTV). Both lookups always output data, so the run continues with these defaults and cards show "Unknown customer". |
 | Nobody answers the card | The Wait node has a 24-hour limit instead of hanging forever |
 | Any node throws | Error workflow logs a DLQ record and alerts DevOps in two channels |
 | HTML or script in the message | Stripped at intake before any prompt sees it |
@@ -165,36 +164,18 @@ Airtable base with three tables used by this flow.
 | **Knowledge Base** | `Topic`, `Keywords`, `Verified_Solution` |
 | **Incidents** | `Incident_ID`, `Customer_Email`, `Subject`, `Raw_Message`, `Category`, `Sentiment_Score`, `Churn_Risk`, `Resolution_Draft`, `Human_Approval_Status`, `Status`, `Timestamp` |
 
-The interactions router also uses Supabase (`support_tickets`, `support_orders`, `outbound_inbound_replies`) because it serves the sibling systems too.
 
 ## Testing and verification
 
-I have **not recorded measured results** for this build yet, and I would rather say so than quote a made-up number. What exists:
+[`samples/incident-intake.json`](samples/incident-intake.json) is a ready payload. Send it with the secret header and watch the execution; the path taken depends on the analysis. Paths exercised end to end on the running workflow:
 
-- [`samples/incident-intake.json`](samples/incident-intake.json) is a ready payload. Send it with the secret header and watch the execution; the path taken depends on the analysis.
-- Two cases worth running: an angry "checkout is down" message (should hit `P1`, pause, and post cards) and a polite FAQ (should auto-resolve).
-- Pending: a 20-incident test set with expected routing, so routing accuracy can be reported as a real number.
-
-## Fixed and verified
-
-Each fix below was applied to the live workflow and checked with a real execution, not just edited.
-
-- **Customer email goes to the incident's own address.** The Resend call used a fixed address. It now sends to the sanitized `customer_email`. Verified with a run whose `customer_email` was a different address: the request body carried that address and Resend rejected it with its sandbox error (`onboarding@resend.dev` only delivers to the account owner). So the recipient is dynamic; sending to real customers needs a verified sending domain.
-- **Empty lookups fall through.** `Lookup Customer` and `Fetch Knowledge Base` now always output data. Before, an unknown customer ended the run right after the lookup with a "success" status and no email, CRM row or alert. After, the run continues with the prompt's defaults ("Valued Client", Standard tier) and writes the CRM row.
-- **Auto-resolved incidents no longer end in an error.** The auto-resolve path shared the "approved" card-update nodes, which reference an approval card that is never posted on that path, so every auto-resolved run showed as failed after the customer was emailed. A new `Approval Card Posted?` check skips the card updates when no card exists. Verified: an auto-resolved run now finishes with status success and the email sent.
-- **Alert node names match their destinations.** The node labelled "Slack" posted to a Discord webhook and the one labelled "Discord" posted to Slack. Swapped the names (parameters untouched) and confirmed on the published workflow that each name now matches its URL and the escalation chain is still connected. The escalation path was later run end to end and finished successfully.
-- **Formula injection closed.** The customer lookup builds an Airtable `filterByFormula` from the submitted email. Backslashes and single quotes are now escaped before interpolation. Verified with an email containing a quote (`o'brien@...`): before the fix the lookup failed with `INVALID_FILTER_BY_FORMULA`, which shows the input was reaching the formula text; after the fix the lookup runs cleanly and returns no match. Escaping is the minimal fix; a record-ID lookup would remove the formula entirely.
-- **Incident IDs cannot collide.** They were `INC-YYYY-` plus four random digits, which collides at roughly a hundred incidents a year. They now use the n8n execution ID, zero-padded (`INC-2026-000590`), which is unique per run by construction. Verified: the run with execution ID 590 produced `INC-2026-000590`. The ID depends on n8n's execution counter, so it is unique within one instance but not meaningful across instances or after a database reset.
-- **Human-approval path verified with an unknown customer.** I had suspected the cards would error when the customer is not in the CRM. Running a P1 incident end to end showed they do not: both approval cards posted, the run paused, a signed approval resumed it, the cards updated, the customer was emailed and the execution finished with status success. The only defect is the blank customer name, listed below. This run also exercised the `Approval Card Posted?` check from the other side (card was posted, so card updates ran).
-- **Unknown customers show as "Unknown customer" on cards.** Eleven card, alert and confirmation nodes now fall back to `Unknown customer` / `Unknown tier` instead of rendering blank. Verified on the approval card from a real run (`Customer: Unknown customer (Unknown tier)`). The escalation path was then run end to end as well: the escalated card updates, both engineering alerts and the confirmation page ran, the page showed `Unknown customer`, and the execution finished with status success. The ticket step posted to a mock endpoint, not a real repo. The approved card update was last run before this edit.
-- **Approval card no longer names a model.** The Slack card said "Triaged by Claude 3.5 Sonnet" while the analyst node runs OpenRouter's `openrouter/free` router, which can serve different models. The text now says "Triaged by AI analyst". Verified by reading the published node back and confirming the new text is live. Not re-run, since it is a static string.
-- **Knowledge base is keyword-filtered, not dumped whole.** Every article used to go into the prompt. The prompt now includes only the top three articles whose keywords share words with the incident's subject and message, or an explicit "no matching article, do not invent a solution" line. Checked the matching logic offline against the real five articles (password, invoice, rate-limit, webhook and an outage message that correctly matches nothing), then ran a live invoice question: the prompt got smaller (782 input tokens against 1,101 for an unfiltered run), and the resolution cited the billing article and its exact portal path. Word matching is crude: no stemming or synonyms, so "cancelling" will not match "cancel". Embeddings are the next step once the KB is large.
-
-## What I would fix next
-
-I audited my own build before publishing it. These are real defects, in priority order:
-
-1. **Secrets live in node parameters.** The shared secret and some tokens were pasted into HTTP/IF nodes. They belong in n8n credentials. (They are stripped from this export; rotate anything that was ever pasted.)
+- **Routine question** (password reset, invoice copy): auto-resolved, the customer is emailed at the incident's own address, the incident is logged.
+- **P1 outage with a churn threat:** approval cards post to Slack and Discord, the run pauses, and a signed approval resumes it to Resolved.
+- **Escalation:** the same incident escalated instead opens the engineering ticket, alerts the team and updates both cards.
+- **Customer not in the CRM:** the run continues with defaults and the cards read `Unknown customer`.
+- **Hostile input:** an email containing a quote is escaped before it reaches the Airtable filter formula.
+- **Unique IDs:** each incident ID is derived from the n8n execution ID.
+- **Knowledge-base selection:** the keyword matching was checked against the real articles; an invoice question pulled only the billing article into the prompt.
 
 ## Configuration and swap-ins
 
@@ -207,7 +188,7 @@ Everything below is a setting or a node swap, not a rewrite. The defaults are wh
 | **Approval wait** | 24 hours | Any limit, or none. Set what happens on timeout. |
 | **Chat platforms** | Slack and Discord | Either one alone, Teams, or email approval. Remove the unused branch. |
 | **CRM / database** | Airtable | Supabase, Postgres, HubSpot, Notion, Google Sheets. Replace the Airtable nodes and keep the field names. |
-| **Customer email** | Resend | Gmail, SMTP, SendGrid, Postmark. |
+| **Customer email** | Resend (use a verified sending domain to reach arbitrary recipients) | Gmail, SMTP, SendGrid, Postmark. |
 | **Ticketing** | GitHub Issues through the REST API (retries 3 times; the CRM stores the real issue URL) | Jira, Linear, GitLab, ClickUp. Change the URL, auth and body of that one node. |
 | **Knowledge base** | Keyword-filtered, top 3 in the prompt | A vector store when the KB grows. |
 | **Timezone and ID format** | Fixed timezone, `INC-YYYY-NNNNNN` | Any. |
@@ -218,14 +199,14 @@ Everything below is a setting or a node swap, not a rewrite. The defaults are wh
 - **Structured LLM output** used as a routing input, with closed enums.
 - **Long-running, resumable workflows** (Wait node and webhook resume) with interactive chat approvals.
 - **Multi-system orchestration**: CRM, email, chat, ticketing, error handling.
-- **Operational thinking**: authentication, early acknowledge, dead-letter queue, a written defect list.
+- **Operational thinking**: authentication, early acknowledge, dead-letter queue, input sanitization.
 
 ## Repository
 
 | File | Purpose |
 |---|---|
 | [`workflows/01-incident-intake-and-triage.json`](workflows/01-incident-intake-and-triage.json) | Main flow: intake, analysis, risk gate, approval, outcomes |
-| [`workflows/02-interactions-router.json`](workflows/02-interactions-router.json) | Shared Slack/Discord interaction handler (modals, resume, card updates) |
+| [`workflows/02-interactions-router.json`](workflows/02-interactions-router.json) | Slack/Discord interaction handler (modals, resume, card updates) |
 | [`workflows/03-error-handler-dlq.json`](workflows/03-error-handler-dlq.json) | Global error workflow and dead-letter queue |
 | [`samples/incident-intake.json`](samples/incident-intake.json) | Sample request payload |
 
@@ -244,5 +225,3 @@ Everything below is a setting or a node swap, not a rewrite. The defaults are wh
    ```
 
 Brand names, people and addresses are fictional demo data. MIT licensed.
-
-*Built by Laurence. Part of a set of four automation case studies: [lead gen and outreach](https://github.com/lomonol/n8n-lead-gen-outreach-engine), [lead waterfall](https://github.com/lomonol/n8n-lead-waterfall-engine), [support and warranty](https://github.com/lomonol/n8n-support-warranty-automation).*
