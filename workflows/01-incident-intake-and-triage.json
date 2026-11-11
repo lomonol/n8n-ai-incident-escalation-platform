@@ -1279,7 +1279,7 @@
         -272
       ],
       "id": "681c241a-bf44-460d-b220-91d1833b22d6",
-      "name": "Alert Engineering Team - Slack"
+      "name": "Alert Engineering Team - Discord"
     },
     {
       "parameters": {
@@ -1297,7 +1297,7 @@
         -272
       ],
       "id": "c10a065e-870e-4237-b771-f58a8e88bc72",
-      "name": "Alert Engineering Team - Discord"
+      "name": "Alert Engineering Team - Slack"
     },
     {
       "parameters": {
@@ -1725,18 +1725,18 @@
         ]
       ]
     },
-    "Alert Engineering Team - Discord": {
+    "Alert Engineering Team - Slack": {
       "main": [
         [
           {
-            "node": "Alert Engineering Team - Slack",
+            "node": "Alert Engineering Team - Discord",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Alert Engineering Team - Slack": {
+    "Alert Engineering Team - Discord": {
       "main": [
         [
           {
@@ -1784,7 +1784,7 @@
       "main": [
         [
           {
-            "node": "Alert Engineering Team - Discord",
+            "node": "Alert Engineering Team - Slack",
             "type": "main",
             "index": 0
           }
