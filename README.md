@@ -150,7 +150,7 @@ Every workflow in the set points its **Error workflow** setting at one handler. 
 | What goes wrong | What happens |
 |---|---|
 | Missing or wrong secret | `401`, no data touched, no LLM cost |
-| Customer not in the CRM | The prompt carries fallbacks ("Unknown / New Customer", `Free Starter`, $0 LTV). *Not yet tested with an empty lookup result, which n8n may treat as no output; see next fixes.* |
+| Customer not in the CRM | The prompt carries fallbacks ("Unknown / New Customer", `Free Starter`, $0 LTV). Tested live with an unknown email: both lookups are set to always output data, so the run falls through to these defaults instead of ending silently. |
 | Nobody answers the card | The Wait node has a 24-hour limit instead of hanging forever |
 | Any node throws | Error workflow logs a DLQ record and alerts DevOps in two channels |
 | HTML or script in the message | Stripped at intake before any prompt sees it |
@@ -175,18 +175,24 @@ I have **not recorded measured results** for this build yet, and I would rather 
 - Two cases worth running: an angry "checkout is down" message (should hit `P1`, pause, and post cards) and a polite FAQ (should auto-resolve).
 - Pending: a 20-incident test set with expected routing, so routing accuracy can be reported as a real number.
 
+## Fixed and verified
+
+Each fix below was applied to the live workflow and checked with a real execution, not just edited.
+
+- **Customer email goes to the incident's own address.** The Resend call used a fixed address. It now sends to the sanitized `customer_email`. Verified with a run whose `customer_email` was a different address: the request body carried that address and Resend rejected it with its sandbox error (`onboarding@resend.dev` only delivers to the account owner). So the recipient is dynamic; sending to real customers needs a verified sending domain.
+- **Empty lookups fall through.** `Lookup Customer` and `Fetch Knowledge Base` now always output data. Before, an unknown customer ended the run right after the lookup with a "success" status and no email, CRM row or alert. After, the run continues with the prompt's defaults ("Valued Client", Standard tier) and writes the CRM row.
+
 ## What I would fix next
 
 I audited my own build before publishing it. These are real defects, in priority order:
 
-1. **Customer email goes to a fixed test address.** The recipient should be the incident's `customer_email`.
+1. **Auto-resolved incidents end in an error after the email is sent.** The auto-resolve path shares the "approved" card-update nodes, which reference the approval card that was never posted on that path, and read customer fields without a safe fallback. Found while verifying the fixes above; the customer still gets the email, but the execution shows as failed.
 2. **Two alert nodes have swapped names.** The node labelled "Slack" posts to a Discord webhook and the one labelled "Discord" posts to Slack. Behaviour is fine, labels are wrong, and that is exactly how on-call gets confused.
 3. **Secrets live in node parameters.** The shared secret and some tokens were pasted into HTTP/IF nodes. They belong in n8n credentials. (They are stripped from this export; rotate anything that was ever pasted.)
 4. **Formula injection.** The customer lookup builds an Airtable `filterByFormula` string from user-supplied email. It should be escaped or replaced with a record-ID lookup.
 5. **Incident IDs are random.** `INC-YYYY-` plus four random digits can collide. Use a sequence or UUID.
 6. **Whole-table knowledge base.** Every KB article goes into the prompt. That is fine for a small KB and does not scale; the next step is retrieval (keyword filter, then embeddings).
-7. **Empty-lookup behaviour is untested.** A customer or KB search that returns nothing may end the branch instead of falling through to the prompt defaults. Set the nodes to always output data and test it.
-8. **Approval card text names a specific model** that does not match the model router configured on the node. Cosmetic, but it should not claim something untrue.
+7. **Approval card text names a specific model** that does not match the model router configured on the node. Cosmetic, but it should not claim something untrue.
 
 ## Configuration and swap-ins
 
