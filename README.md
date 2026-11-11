@@ -2,13 +2,13 @@
 
 **An n8n system that triages customer incidents with an LLM, resolves the low-risk ones on its own, and stops to ask a human before anything high-risk goes out.**
 
-![n8n](https://img.shields.io/badge/n8n-29--node%20workflow-EA4B71?style=flat-square) ![LLM](https://img.shields.io/badge/LLM-structured%20output-blue?style=flat-square) ![HITL](https://img.shields.io/badge/human--in--the--loop-Slack%20%2B%20Discord-green?style=flat-square) ![Status](https://img.shields.io/badge/status-portfolio%20build-lightgrey?style=flat-square)
+![n8n](https://img.shields.io/badge/n8n-30--node%20workflow-EA4B71?style=flat-square) ![LLM](https://img.shields.io/badge/LLM-structured%20output-blue?style=flat-square) ![HITL](https://img.shields.io/badge/human--in--the--loop-Slack%20%2B%20Discord-green?style=flat-square) ![Status](https://img.shields.io/badge/status-portfolio%20build-lightgrey?style=flat-square)
 
 | | |
 |---|---|
 | **Type** | Portfolio build (reference implementation, not a client engagement) |
 | **My role** | Sole designer and builder: workflow design, prompt and schema design, integrations, failure handling |
-| **Scale** | 3 workflows, 29 nodes in the main flow, 4 external systems, 2 chat platforms |
+| **Scale** | 3 workflows, 30 nodes in the main flow, 4 external systems, 2 chat platforms |
 | **Stack** | n8n, OpenRouter (LLM), Airtable, Resend, Slack API, Discord API, GitHub Issues API |
 | **Status** | Runs end to end on sample data. |
 
@@ -206,7 +206,7 @@ Everything below is a setting or a node swap, not a rewrite. The defaults are wh
 | File | Purpose |
 |---|---|
 | [`workflows/01-incident-intake-and-triage.json`](workflows/01-incident-intake-and-triage.json) | Main flow: intake, analysis, risk gate, approval, outcomes |
-| [`workflows/02-interactions-router.json`](workflows/02-interactions-router.json) | Slack/Discord interaction handler (modals, resume, card updates) |
+| [`workflows/02-interactions-router.json`](workflows/02-interactions-router.json) | Slack/Discord interaction handler (verification modals and run resume) |
 | [`workflows/03-error-handler-dlq.json`](workflows/03-error-handler-dlq.json) | Global error workflow and dead-letter queue |
 | [`samples/incident-intake.json`](samples/incident-intake.json) | Sample request payload |
 
