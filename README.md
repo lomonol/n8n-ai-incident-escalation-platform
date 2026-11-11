@@ -186,15 +186,15 @@ Each fix below was applied to the live workflow and checked with a real executio
 - **Formula injection closed.** The customer lookup builds an Airtable `filterByFormula` from the submitted email. Backslashes and single quotes are now escaped before interpolation. Verified with an email containing a quote (`o'brien@...`): before the fix the lookup failed with `INVALID_FILTER_BY_FORMULA`, which shows the input was reaching the formula text; after the fix the lookup runs cleanly and returns no match. Escaping is the minimal fix; a record-ID lookup would remove the formula entirely.
 - **Incident IDs cannot collide.** They were `INC-YYYY-` plus four random digits, which collides at roughly a hundred incidents a year. They now use the n8n execution ID, zero-padded (`INC-2026-000590`), which is unique per run by construction. Verified: the run with execution ID 590 produced `INC-2026-000590`. The ID depends on n8n's execution counter, so it is unique within one instance but not meaningful across instances or after a database reset.
 - **Human-approval path verified with an unknown customer.** I had suspected the cards would error when the customer is not in the CRM. Running a P1 incident end to end showed they do not: both approval cards posted, the run paused, a signed approval resumed it, the cards updated, the customer was emailed and the execution finished with status success. The only defect is the blank customer name, listed below. This run also exercised the `Approval Card Posted?` check from the other side (card was posted, so card updates ran).
+- **Unknown customers show as "Unknown customer" on cards.** Eleven card, alert and confirmation nodes now fall back to `Unknown customer` / `Unknown tier` instead of rendering blank. Verified on the approval card from a real run (`Customer: Unknown customer (Unknown tier)`). The approved/escalated card updates, engineering alerts and confirmation pages got the same edit but I have not run them since; that part is untested.
 
 ## What I would fix next
 
 I audited my own build before publishing it. These are real defects, in priority order:
 
-1. **Cards show a blank customer for unknown customers.** Twelve nodes read `Customer_Name`, `Account_Tier` and similar fields straight off the CRM lookup with no fallback. For a customer not in the CRM this does not crash (checked live), but the card renders `Customer:  ()`. Add fallbacks such as `|| 'Unknown customer'`.
-2. **Secrets live in node parameters.** The shared secret and some tokens were pasted into HTTP/IF nodes. They belong in n8n credentials. (They are stripped from this export; rotate anything that was ever pasted.)
-3. **Whole-table knowledge base.** Every KB article goes into the prompt. That is fine for a small KB and does not scale; the next step is retrieval (keyword filter, then embeddings).
-4. **Approval card text names a specific model** that does not match the model router configured on the node. Cosmetic, but it should not claim something untrue.
+1. **Secrets live in node parameters.** The shared secret and some tokens were pasted into HTTP/IF nodes. They belong in n8n credentials. (They are stripped from this export; rotate anything that was ever pasted.)
+2. **Whole-table knowledge base.** Every KB article goes into the prompt. That is fine for a small KB and does not scale; the next step is retrieval (keyword filter, then embeddings).
+3. **Approval card text names a specific model** that does not match the model router configured on the node. Cosmetic, but it should not claim something untrue.
 
 ## Configuration and swap-ins
 
