@@ -11,6 +11,7 @@
 | **Scale** | 3 workflows, 30 nodes in the main flow, 4 external systems, 2 chat platforms |
 | **Stack** | n8n, OpenRouter (LLM), Airtable, Resend, Slack API, Discord API, GitHub Issues API |
 | **Status** | Runs end to end on sample data; tested on 100 synthetic incidents (results below). |
+| **Results** | On 100 synthetic incidents: 100 of 100 routed to the correct path, 12 of 12 P1 and churn threats paused for a person, 4 of 4 deliberate failures caught and alerted |
 
 ---
 
