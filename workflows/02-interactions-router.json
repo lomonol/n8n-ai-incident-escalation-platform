@@ -139,10 +139,6 @@
         "headerParameters": {
           "parameters": [
             {
-              "name": "Authorization",
-              "value": "Bearer YOUR_SLACK_BOT_TOKEN"
-            },
-            {
               "name": "Content-Type",
               "value": "application/json; charset=utf-8"
             }
@@ -150,7 +146,15 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{\n  JSON.stringify({\n    trigger_id: $json.trigger_id,\n    view: {\n      type: \"modal\",\n      callback_id: \"incident_signoff_modal\",\n      private_metadata: $json.private_metadata,\n      title: {\n        type: \"plain_text\",\n        text: \"Incident Authorization\"\n      },\n      submit: {\n        type: \"plain_text\",\n        text: \"Authorize\"\n      },\n      close: {\n        type: \"plain_text\",\n        text: \"Cancel\"\n      },\n      blocks: [\n        {\n          type: \"input\",\n          block_id: \"notes_block\",\n          element: {\n            type: \"plain_text_input\",\n            action_id: \"notes_input\",\n            multiline: true,\n            placeholder: {\n              type: \"plain_text\",\n              text: \"Enter verification details before dispatching to client...\"\n            }\n          },\n          label: {\n            type: \"plain_text\",\n            text: \"Resolution Notes / Justification\"\n          }\n        }\n      ]\n    }\n  })\n}}"
+        "jsonBody": "={{\n  JSON.stringify({\n    trigger_id: $json.trigger_id,\n    view: {\n      type: \"modal\",\n      callback_id: \"incident_signoff_modal\",\n      private_metadata: $json.private_metadata,\n      title: {\n        type: \"plain_text\",\n        text: \"Incident Authorization\"\n      },\n      submit: {\n        type: \"plain_text\",\n        text: \"Authorize\"\n      },\n      close: {\n        type: \"plain_text\",\n        text: \"Cancel\"\n      },\n      blocks: [\n        {\n          type: \"input\",\n          block_id: \"notes_block\",\n          element: {\n            type: \"plain_text_input\",\n            action_id: \"notes_input\",\n            multiline: true,\n            placeholder: {\n              type: \"plain_text\",\n              text: \"Enter verification details before dispatching to client...\"\n            }\n          },\n          label: {\n            type: \"plain_text\",\n            text: \"Resolution Notes / Justification\"\n          }\n        }\n      ]\n    }\n  })\n}}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_ME",
+          "name": "Slack Bot Token"
+        }
       }
     },
     {
