@@ -1447,6 +1447,40 @@
       ],
       "id": "afbce605-02d4-471b-8aa6-bc1947e0a62c",
       "name": "Discord Card: Escalated"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c1a2b3d4-0001-4000-8000-aaaaaaaaaaaa",
+              "leftValue": "={{ $('Send Slack Approval Card').isExecuted }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3600,
+        -656
+      ],
+      "id": "7d1f2a6e-3b4c-4e55-9a10-5c2d8e9f0a11",
+      "name": "Approval Card Posted?"
     }
   ],
   "connections": {
@@ -1633,7 +1667,7 @@
       "main": [
         [
           {
-            "node": "Slack Card: Approved",
+            "node": "Approval Card Posted?",
             "type": "main",
             "index": 0
           }
@@ -1755,6 +1789,18 @@
             "index": 0
           }
         ]
+      ]
+    },
+    "Approval Card Posted?": {
+      "main": [
+        [
+          {
+            "node": "Slack Card: Approved",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
       ]
     }
   },

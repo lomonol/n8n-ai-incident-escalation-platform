@@ -181,12 +181,13 @@ Each fix below was applied to the live workflow and checked with a real executio
 
 - **Customer email goes to the incident's own address.** The Resend call used a fixed address. It now sends to the sanitized `customer_email`. Verified with a run whose `customer_email` was a different address: the request body carried that address and Resend rejected it with its sandbox error (`onboarding@resend.dev` only delivers to the account owner). So the recipient is dynamic; sending to real customers needs a verified sending domain.
 - **Empty lookups fall through.** `Lookup Customer` and `Fetch Knowledge Base` now always output data. Before, an unknown customer ended the run right after the lookup with a "success" status and no email, CRM row or alert. After, the run continues with the prompt's defaults ("Valued Client", Standard tier) and writes the CRM row.
+- **Auto-resolved incidents no longer end in an error.** The auto-resolve path shared the "approved" card-update nodes, which reference an approval card that is never posted on that path, so every auto-resolved run showed as failed after the customer was emailed. A new `Approval Card Posted?` check skips the card updates when no card exists. Verified: an auto-resolved run now finishes with status success and the email sent.
 
 ## What I would fix next
 
 I audited my own build before publishing it. These are real defects, in priority order:
 
-1. **Auto-resolved incidents end in an error after the email is sent.** The auto-resolve path shares the "approved" card-update nodes, which reference the approval card that was never posted on that path, and read customer fields without a safe fallback. Found while verifying the fixes above; the customer still gets the email, but the execution shows as failed.
+1. **Approved-card nodes still assume a customer record.** They read `Customer_Name` and `Account_Tier` without a safe fallback, so a *human-approved* incident from an unknown customer would error at the card update. Not yet tested on the human-approval path.
 2. **Two alert nodes have swapped names.** The node labelled "Slack" posts to a Discord webhook and the one labelled "Discord" posts to Slack. Behaviour is fine, labels are wrong, and that is exactly how on-call gets confused.
 3. **Secrets live in node parameters.** The shared secret and some tokens were pasted into HTTP/IF nodes. They belong in n8n credentials. (They are stripped from this export; rotate anything that was ever pasted.)
 4. **Formula injection.** The customer lookup builds an Airtable `filterByFormula` string from user-supplied email. It should be escaped or replaced with a record-ID lookup.
