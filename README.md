@@ -183,6 +183,7 @@ Each fix below was applied to the live workflow and checked with a real executio
 - **Empty lookups fall through.** `Lookup Customer` and `Fetch Knowledge Base` now always output data. Before, an unknown customer ended the run right after the lookup with a "success" status and no email, CRM row or alert. After, the run continues with the prompt's defaults ("Valued Client", Standard tier) and writes the CRM row.
 - **Auto-resolved incidents no longer end in an error.** The auto-resolve path shared the "approved" card-update nodes, which reference an approval card that is never posted on that path, so every auto-resolved run showed as failed after the customer was emailed. A new `Approval Card Posted?` check skips the card updates when no card exists. Verified: an auto-resolved run now finishes with status success and the email sent.
 - **Alert node names match their destinations.** The node labelled "Slack" posted to a Discord webhook and the one labelled "Discord" posted to Slack. Swapped the names (parameters untouched) and confirmed on the published workflow that each name now matches its URL and the escalation chain is still connected. Not re-run end to end, because that path posts to the live Slack and Discord channels.
+- **Formula injection closed.** The customer lookup builds an Airtable `filterByFormula` from the submitted email. Backslashes and single quotes are now escaped before interpolation. Verified with an email containing a quote (`o'brien@...`): before the fix the lookup failed with `INVALID_FILTER_BY_FORMULA`, which shows the input was reaching the formula text; after the fix the lookup runs cleanly and returns no match. Escaping is the minimal fix; a record-ID lookup would remove the formula entirely.
 
 ## What I would fix next
 
@@ -190,10 +191,9 @@ I audited my own build before publishing it. These are real defects, in priority
 
 1. **Approved-card nodes still assume a customer record.** They read `Customer_Name` and `Account_Tier` without a safe fallback, so a *human-approved* incident from an unknown customer would error at the card update. Not yet tested on the human-approval path.
 2. **Secrets live in node parameters.** The shared secret and some tokens were pasted into HTTP/IF nodes. They belong in n8n credentials. (They are stripped from this export; rotate anything that was ever pasted.)
-3. **Formula injection.** The customer lookup builds an Airtable `filterByFormula` string from user-supplied email. It should be escaped or replaced with a record-ID lookup.
-4. **Incident IDs are random.** `INC-YYYY-` plus four random digits can collide. Use a sequence or UUID.
-5. **Whole-table knowledge base.** Every KB article goes into the prompt. That is fine for a small KB and does not scale; the next step is retrieval (keyword filter, then embeddings).
-6. **Approval card text names a specific model** that does not match the model router configured on the node. Cosmetic, but it should not claim something untrue.
+3. **Incident IDs are random.** `INC-YYYY-` plus four random digits can collide. Use a sequence or UUID.
+4. **Whole-table knowledge base.** Every KB article goes into the prompt. That is fine for a small KB and does not scale; the next step is retrieval (keyword filter, then embeddings).
+5. **Approval card text names a specific model** that does not match the model router configured on the node. Cosmetic, but it should not claim something untrue.
 
 ## Configuration and swap-ins
 

@@ -81,7 +81,7 @@
           "cachedResultName": "Customers",
           "cachedResultUrl": "https://airtable.com/appYOUR_BASE_ID/tblYOUR_TABLE_ID"
         },
-        "filterByFormula": "={Primary_Email} = '{{ $('Clean & Sanitize Inputs').item.json.customer_email }}'",
+        "filterByFormula": "={Primary_Email} = '{{ $('Clean & Sanitize Inputs').item.json.customer_email.replace(/\\\\/g, '\\\\\\\\').replace(/'/g, \"\\\\'\") }}'",
         "options": {}
       },
       "type": "n8n-nodes-base.airtable",
