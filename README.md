@@ -212,7 +212,7 @@ Everything below is a setting or a node swap, not a rewrite. The defaults are wh
 
 ### Run it yourself
 1. Import the three workflows into n8n (1.x or 2.x). All are exported **inactive**.
-2. Replace every placeholder (`REPLACE_ME`, `YOUR_*`, `WORKFLOW_ID_*`) and re-select your own credentials. Re-link the Execute Workflow and error-workflow settings to your imported copies.
+2. Create three **Header Auth** credentials (`Resend API` with `Authorization: Bearer <key>`, `Slack Bot Token` with `Authorization: Bearer <token>`, `Discord Bot` with `Authorization: Bot <token>`), plus Airtable and OpenRouter credentials. Replace every placeholder (`REPLACE_ME`, `YOUR_*`, `WORKFLOW_ID_*`) and re-select your own credentials. Re-link the Execute Workflow and error-workflow settings to your imported copies.
 3. Create the three Airtable tables above.
 4. In the escalation node, set your repository (`YOUR_OWNER/YOUR_REPO`) and attach a GitHub credential (a fine-grained token with Issues: write on that repository).
 5. Send the sample payload:

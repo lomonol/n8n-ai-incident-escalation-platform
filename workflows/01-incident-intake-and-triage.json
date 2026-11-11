@@ -485,10 +485,6 @@
         "headerParameters": {
           "parameters": [
             {
-              "name": "Authorization",
-              "value": "Bearer YOUR_RESEND_API_KEY"
-            },
-            {
               "name": "Content-Type",
               "value": "application/json"
             }
@@ -497,7 +493,9 @@
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{\n  JSON.stringify({\n    from: \"Aura Support <you@example.com>\",\n    to: [ $('Clean & Sanitize Inputs').item.json.customer_email ],\n    subject: `✅ Resolved: Incident ${$('Clean & Sanitize Inputs').item.json.incident_id} — Aura Support`,\n    html: `<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Incident Resolved</title>\n</head>\n<body style=\"margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1e293b; line-height: 1.6;\">\n  <table role=\"presentation\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" style=\"background-color: #f1f5f9; padding: 40px 12px;\">\n    <tr>\n      <td align=\"center\">\n        <table role=\"presentation\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" style=\"max-width: 600px; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.08); border: 1px solid #e2e8f0;\">\n          <tr>\n            <td style=\"background: #0f172a; padding: 28px 32px; text-align: left;\">\n              <table role=\"presentation\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\">\n                <tr>\n                  <td>\n                    <span style=\"font-size: 20px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;\">⚡ AURA DIGITAL</span>\n                    <span style=\"display: block; font-size: 12px; color: #94a3b8; font-weight: 500; margin-top: 2px;\">Incident Response & Engineering Operations</span>\n                  </td>\n                  <td align=\"right\" valign=\"middle\">\n                    <span style=\"background-color: #065f46; color: #34d399; font-size: 11px; font-weight: 700; padding: 5px 12px; border-radius: 9999px; text-transform: uppercase;\">Resolved</span>\n                  </td>\n                </tr>\n              </table>\n            </td>\n          </tr>\n          <tr>\n            <td style=\"padding: 36px 32px;\">\n              <h1 style=\"margin: 0 0 16px 0; font-size: 22px; font-weight: 700; color: #0f172a;\">\n                Incident Resolved: ${$('Clean & Sanitize Inputs').item.json.incident_id}\n              </h1>\n              <p style=\"margin: 0 0 20px 0; font-size: 15px; color: #475569;\">\n                Hello <strong>${$('Lookup Customer').item.json.fields?.Customer_Name || 'Valued Client'}</strong>,\n              </p>\n              <p style=\"margin: 0 0 24px 0; font-size: 15px; color: #475569;\">\n                Our technical operations team has thoroughly investigated the inquiry regarding your account and implemented a permanent resolution. Please review the official findings below:\n              </p>\n              <table role=\"presentation\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" style=\"margin-bottom: 24px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #10b981; border-radius: 8px;\">\n                <tr>\n                  <td style=\"padding: 20px 24px;\">\n                    <div style=\"font-size: 12px; font-weight: 700; text-transform: uppercase; color: #059669; letter-spacing: 0.5px; margin-bottom: 8px;\">\n                      Official Technical Resolution\n                    </div>\n                    <div style=\"font-size: 14px; color: #334155; line-height: 1.7; white-space: pre-wrap;\">\n${$('AI Incident Analyst').item.json.output?.resolution_draft || 'No resolution text provided.'}\n                    </div>\n                  </td>\n                </tr>\n              </table>\n              <table role=\"presentation\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" style=\"margin-bottom: 28px; background-color: #ffffff; border: 1px solid #f1f5f9; border-radius: 8px; font-size: 13px;\">\n                <tr>\n                  <td style=\"padding: 10px 14px; color: #64748b; border-bottom: 1px solid #f1f5f9; width: 40%;\">Incident Reference:</td>\n                  <td style=\"padding: 10px 14px; color: #0f172a; font-weight: 600; border-bottom: 1px solid #f1f5f9;\">${$('Clean & Sanitize Inputs').item.json.incident_id}</td>\n                </tr>\n                <tr>\n                  <td style=\"padding: 10px 14px; color: #64748b; border-bottom: 1px solid #f1f5f9;\">Account SLA Tier:</td>\n                  <td style=\"padding: 10px 14px; color: #0f172a; font-weight: 600; border-bottom: 1px solid #f1f5f9;\">⭐ ${$('Lookup Customer').item.json.fields?.Account_Tier || 'Standard Tier'}</td>\n                </tr>\n                <tr>\n                  <td style=\"padding: 10px 14px; color: #64748b; border-bottom: 1px solid #f1f5f9;\">Classification:</td>\n                  <td style=\"padding: 10px 14px; color: #0f172a; font-weight: 600; border-bottom: 1px solid #f1f5f9;\">${$('AI Incident Analyst').item.json.output?.category || 'General'}</td>\n                </tr>\n                <tr>\n                  <td style=\"padding: 10px 14px; color: #64748b;\">Resolved At:</td>\n                  <td style=\"padding: 10px 14px; color: #0f172a; font-weight: 600;\">${$now.setZone('Asia/Manila').toFormat('yyyy-MM-dd HH:mm')}</td>\n                </tr>\n              </table>\n              <p style=\"margin: 0 0 16px 0; font-size: 14px; color: #64748b;\">\n                If you have additional questions or if this issue recurs, simply reply directly to this email to reopen the case.\n              </p>\n              <p style=\"margin: 24px 0 0 0; font-size: 14px; color: #0f172a; font-weight: 600;\">\n                Warm regards,<br>\n                <span style=\"font-weight: 400; color: #475569;\">Marcus Sterling & The Aura Digital Engineering Team</span>\n              </p>\n            </td>\n          </tr>\n          <tr>\n            <td style=\"background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 20px 32px; text-align: center; font-size: 12px; color: #94a3b8;\">\n              © 2026 Aura Digital Agency. All rights reserved.<br>\n              Automated Incident Resolution Platform • SLA Monitoring Active\n            </td>\n          </tr>\n        </table>\n      </td>\n    </tr>\n  </table>\n</body>\n</html>`\n  })\n}}",
-        "options": {}
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
@@ -506,7 +504,13 @@
         -544
       ],
       "id": "0a3dfd10-4f0c-4f0b-821f-c0371e1470f7",
-      "name": "Send Customer Email"
+      "name": "Send Customer Email",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_ME",
+          "name": "Resend API"
+        }
+      }
     },
     {
       "parameters": {
@@ -583,10 +587,6 @@
         "headerParameters": {
           "parameters": [
             {
-              "name": "Authorization",
-              "value": "Bot YOUR_DISCORD_BOT_TOKEN"
-            },
-            {
               "name": "Content-Type",
               "value": "application/json"
             }
@@ -595,7 +595,9 @@
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n  \"username\": \"Aura Incident Sentry\",\n  \"avatar_url\": \"https://img.icons8.com/fluency/96/shield.png\",\n  \"embeds\": [\n    {\n      \"title\": \"🚨 ACTION REQUIRED: {{ $('Clean & Sanitize Inputs').item.json.incident_id }}\",\n      \"color\": 16744448,\n      \"description\": \"An incoming high-priority incident requires human authorization before dispatch.\",\n      \"author\": {\n        \"name\": \"AURA DIGITAL OPERATIONS • INCIDENT TRIAGE\",\n        \"icon_url\": \"https://img.icons8.com/fluency/48/bot.png\"\n      },\n      \"fields\": [\n        {\n          \"name\": \"👤 Customer\",\n          \"value\": \"{{ ($('Lookup Customer').item.json.fields?.Customer_Name || 'Unknown customer') }} ({{ ($('Lookup Customer').item.json.fields?.Account_Tier || 'Unknown tier') }})\",\n          \"inline\": true\n        },\n        {\n          \"name\": \"🔥 Urgency\",\n          \"value\": \"`{{ $('AI Incident Analyst').item.json.output.urgency_level }}`\",\n          \"inline\": true\n        },\n        {\n          \"name\": \"📂 Category\",\n          \"value\": \"`{{ $('AI Incident Analyst').item.json.output.category }}`\",\n          \"inline\": true\n        },\n        {\n          \"name\": \"💡 Proposed Customer Resolution\",\n          \"value\": \"```\\n{{ $('AI Incident Analyst').item.json.output.resolution_draft.slice(0, 500) }}\\n```\"\n        }\n      ],\n      \"footer\": {\n        \"text\": \"Aura Autonomous Platform • In-App Modal Authorization\",\n        \"icon_url\": \"https://img.icons8.com/fluency/48/lock.png\"\n      }\n    }\n  ],\n  \"components\": [\n    {\n      \"type\": 1,\n      \"components\": [\n        {\n          \"type\": 2,\n          \"style\": 3,\n          \"label\": \"Approve & Sign-Off\",\n          \"emoji\": {\n            \"name\": \"✅\"\n          },\n          \"custom_id\": \"appr|{{ $execution.resumeUrl.includes('/webhook-waiting/') ? $execution.resumeUrl.split('/webhook-waiting/')[1] : $execution.resumeUrl }}\"\n        },\n        {\n          \"type\": 2,\n          \"style\": 4,\n          \"label\": \"Escalate to Engineering\",\n          \"emoji\": {\n            \"name\": \"🚨\"\n          },\n          \"custom_id\": \"escl|{{ $execution.resumeUrl.includes('/webhook-waiting/') ? $execution.resumeUrl.split('/webhook-waiting/')[1] : $execution.resumeUrl }}\"\n        }\n      ]\n    }\n  ]\n}",
-        "options": {}
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
@@ -604,7 +606,13 @@
         -368
       ],
       "id": "8f89e34a-b757-4d05-bf47-5ec2bfd0d856",
-      "name": "Send Discord Approval Card"
+      "name": "Send Discord Approval Card",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_ME",
+          "name": "Discord Bot"
+        }
+      }
     },
     {
       "parameters": {
@@ -614,10 +622,6 @@
         "headerParameters": {
           "parameters": [
             {
-              "name": "Authorization",
-              "value": "Bearer YOUR_SLACK_BOT_TOKEN"
-            },
-            {
               "name": "Content-Type",
               "value": "application/json; charset=utf-8"
             }
@@ -626,7 +630,9 @@
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n  \"channel\": \"C0CDJNJAFQS\",\n  \"text\": \"🚨 ACTION REQUIRED: Critical Incident {{ $('Clean & Sanitize Inputs').item.json.incident_id }}\",\n  \"blocks\": [\n    {\n      \"type\": \"header\",\n      \"text\": {\n        \"type\": \"plain_text\",\n        \"text\": \"🚨 ACTION REQUIRED: Incident {{ $('Clean & Sanitize Inputs').item.json.incident_id }}\",\n        \"emoji\": true\n      }\n    },\n    {\n      \"type\": \"context\",\n      \"elements\": [\n        {\n          \"type\": \"mrkdwn\",\n          \"text\": \"⚡ *Aura Incident Sentry* • Triaged by AI analyst • Waiting for Decision\"\n        }\n      ]\n    },\n    {\n      \"type\": \"divider\"\n    },\n    {\n      \"type\": \"section\",\n      \"fields\": [\n        {\n          \"type\": \"mrkdwn\",\n          \"text\": \"*👤 Customer:*\\n{{ ($('Lookup Customer').item.json.fields?.Customer_Name || 'Unknown customer') }} ({{ ($('Lookup Customer').item.json.fields?.Account_Tier || 'Unknown tier') }})\"\n        },\n        {\n          \"type\": \"mrkdwn\",\n          \"text\": \"*🔥 Urgency:*\\n`{{ $('AI Incident Analyst').item.json.output.urgency_level }}`\"\n        },\n        {\n          \"type\": \"mrkdwn\",\n          \"text\": \"*📂 Category:*\\n`{{ $('AI Incident Analyst').item.json.output.category }}`\"\n        },\n        {\n          \"type\": \"mrkdwn\",\n          \"text\": \"*📊 Churn Risk:*\\n{{ $('AI Incident Analyst').item.json.output.churn_risk }}\"\n        }\n      ]\n    },\n    {\n      \"type\": \"section\",\n      \"text\": {\n        \"type\": \"mrkdwn\",\n        \"text\": \"*💡 Proposed Customer Resolution:*\\n> {{ JSON.stringify($('AI Incident Analyst').item.json.output.resolution_draft || '').slice(1, -1) }}\"\n      }\n    },\n    {\n      \"type\": \"divider\"\n    },\n    {\n      \"type\": \"actions\",\n      \"block_id\": \"incident_approval_actions\",\n      \"elements\": [\n        {\n          \"type\": \"button\",\n          \"text\": {\n            \"type\": \"plain_text\",\n            \"text\": \"✅ Approve & Sign-Off\",\n            \"emoji\": true\n          },\n          \"style\": \"primary\",\n          \"action_id\": \"btn_approve_incident\",\n          \"value\": \"approved|{{ $execution.resumeUrl }}\"\n        },\n        {\n          \"type\": \"button\",\n          \"text\": {\n            \"type\": \"plain_text\",\n            \"text\": \"🚨 Escalate to Engineering\",\n            \"emoji\": true\n          },\n          \"style\": \"danger\",\n          \"action_id\": \"btn_escalate_incident\",\n          \"value\": \"escalated|{{ $execution.resumeUrl }}\"\n        }\n      ]\n    },\n    {\n      \"type\": \"context\",\n      \"elements\": [\n        {\n          \"type\": \"mrkdwn\",\n          \"text\": \"🔒 _Interactive In-App Modal. Clicking opens verification dialog without leaving Slack._\"\n        }\n      ]\n    }\n  ]\n}",
-        "options": {}
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
@@ -635,7 +641,13 @@
         -368
       ],
       "id": "cb77625b-cede-424f-9a0c-c371763036cb",
-      "name": "Send Slack Approval Card"
+      "name": "Send Slack Approval Card",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_ME",
+          "name": "Slack Bot Token"
+        }
+      }
     },
     {
       "parameters": {
@@ -1332,10 +1344,6 @@
         "headerParameters": {
           "parameters": [
             {
-              "name": "Authorization",
-              "value": "Bearer YOUR_SLACK_BOT_TOKEN"
-            },
-            {
               "name": "Content-Type",
               "value": "application/json; charset=utf-8"
             }
@@ -1344,7 +1352,9 @@
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n  \"channel\": \"C0CDJNJAFQS\",\n  \"ts\": \"{{ $('Send Slack Approval Card').item.json.ts }}\",\n  \"text\": \"✅ RESOLVED: Incident {{ $('Clean & Sanitize Inputs').item.json.incident_id }}\",\n  \"blocks\": [\n    {\n      \"type\": \"header\",\n      \"text\": {\n        \"type\": \"plain_text\",\n        \"text\": \"✅ RESOLVED: Incident {{ $('Clean & Sanitize Inputs').item.json.incident_id }}\",\n        \"emoji\": true\n      }\n    },\n    {\n      \"type\": \"section\",\n      \"fields\": [\n        {\n          \"type\": \"mrkdwn\",\n          \"text\": \"*👤 Customer:*\\n{{ ($('Lookup Customer').item.json.fields?.Customer_Name || 'Unknown customer') }} ({{ ($('Lookup Customer').item.json.fields?.Account_Tier || 'Unknown tier') }})\"\n        },\n        {\n          \"type\": \"mrkdwn\",\n          \"text\": \"*Status:*\\n🟢 *Approved & Resolved*\"\n        },\n        {\n          \"type\": \"mrkdwn\",\n          \"text\": \"*Decision Platform:*\\n{{ $('Wait for Human Decision').item.json.query?.platform === 'discord' ? '🎮 Discord Bot' : '💬 Slack App' }}\"\n        },\n        {\n          \"type\": \"mrkdwn\",\n          \"text\": \"*Authorized By:*\\n{{ $('Wait for Human Decision').item.json.query?.approver || $('Lookup Customer').item.json.fields.Assigned_Executive || 'Marcus Sterling (Commander)' }}\"\n        },\n        {\n          \"type\": \"mrkdwn\",\n          \"text\": \"*📂 Category:*\\n`{{ $('AI Incident Analyst').item.json.output.category }}`\"\n        },\n        {\n          \"type\": \"mrkdwn\",\n          \"text\": \"*Resolved At:*\\n{{ $now.setZone('Asia/Manila').toFormat('yyyy-MM-dd HH:mm') }}\"\n        }\n      ]\n    },\n    {\n      \"type\": \"section\",\n      \"text\": {\n        \"type\": \"mrkdwn\",\n        \"text\": \"*📝 Sign-Off Notes:*\\n> {{ $('Wait for Human Decision').item.json.query?.notes || 'Direct 1-Click Verification' }}\"\n      }\n    },\n    {\n      \"type\": \"context\",\n      \"elements\": [\n        {\n          \"type\": \"mrkdwn\",\n          \"text\": \"🔒 *Card Sealed:* Authorized by Human Approver. Resolution sent to customer.\"\n        }\n      ]\n    }\n  ]\n}",
-        "options": {}
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
@@ -1353,7 +1363,13 @@
         -544
       ],
       "id": "9a273ad2-25e9-4747-a253-063abb997e63",
-      "name": "Slack Card: Approved"
+      "name": "Slack Card: Approved",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_ME",
+          "name": "Slack Bot Token"
+        }
+      }
     },
     {
       "parameters": {
@@ -1362,10 +1378,6 @@
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            {
-              "name": "Authorization",
-              "value": "Bot YOUR_DISCORD_BOT_TOKEN"
-            },
             {
               "name": "Content-Type",
               "value": "application/json"
@@ -1375,7 +1387,9 @@
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n  \"embeds\": [\n    {\n      \"title\": \"✅ RESOLVED: {{ $('Clean & Sanitize Inputs').item.json.incident_id }}\",\n      \"color\": 3066993,\n      \"description\": \"This incident has been **approved** and officially resolved.\",\n      \"author\": {\n        \"name\": \"AURA DIGITAL OPERATIONS • INCIDENT TRIAGE\",\n        \"icon_url\": \"https://img.icons8.com/fluency/48/bot.png\"\n      },\n      \"fields\": [\n        {\n          \"name\": \"👤 Customer\",\n          \"value\": \"{{ ($('Lookup Customer').item.json.fields?.Customer_Name || 'Unknown customer') }} ({{ ($('Lookup Customer').item.json.fields?.Account_Tier || 'Unknown tier') }})\",\n          \"inline\": true\n        },\n        {\n          \"name\": \"Status\",\n          \"value\": \"🟢 `Resolved`\",\n          \"inline\": true\n        },\n        {\n          \"name\": \"📱 Decision Platform\",\n          \"value\": \"{{ $('Wait for Human Decision').item.json.query?.platform === 'discord' ? 'Discord Bot' : 'Slack App' }}\",\n          \"inline\": true\n        },\n        {\n          \"name\": \"👤 Authorized By\",\n          \"value\": \"{{ $('Wait for Human Decision').item.json.query?.approver || $('Lookup Customer').item.json.fields.Assigned_Executive || 'Marcus Sterling (Commander)' }}\",\n          \"inline\": true\n        },\n        {\n          \"name\": \"📂 Category\",\n          \"value\": \"`{{ $('AI Incident Analyst').item.json.output.category }}`\",\n          \"inline\": true\n        },\n        {\n          \"name\": \"Resolution Timestamp\",\n          \"value\": \"{{ $now.setZone('Asia/Manila').toFormat('yyyy-MM-dd HH:mm') }}\",\n          \"inline\": true\n        },\n        {\n          \"name\": \"📝 Sign-Off Notes\",\n          \"value\": \"```\\n{{ $('Wait for Human Decision').item.json.query?.notes || 'Direct 1-Click Verification' }}\\n```\"\n        },\n        {\n          \"name\": \"Action Taken\",\n          \"value\": \"Approved AI resolution draft was dispatched to customer email. CRM record marked Resolved.\"\n        }\n      ],\n      \"footer\": {\n        \"text\": \"Aura Autonomous Platform • Decision Sealed (No Further Action Needed)\",\n        \"icon_url\": \"https://img.icons8.com/fluency/48/lock.png\"\n      }\n    }\n  ],\n  \"components\": []\n}",
-        "options": {}
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
@@ -1384,7 +1398,13 @@
         -544
       ],
       "id": "b83d9ea8-c196-452d-8677-78ecdcb9265a",
-      "name": "Discord Card: Approved"
+      "name": "Discord Card: Approved",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_ME",
+          "name": "Discord Bot"
+        }
+      }
     },
     {
       "parameters": {
@@ -1394,10 +1414,6 @@
         "headerParameters": {
           "parameters": [
             {
-              "name": "Authorization",
-              "value": "Bearer YOUR_SLACK_BOT_TOKEN"
-            },
-            {
               "name": "Content-Type",
               "value": "application/json; charset=utf-8"
             }
@@ -1406,7 +1422,9 @@
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n  \"channel\": \"C0CDJNJAFQS\",\n  \"ts\": \"{{ $('Send Slack Approval Card').item.json.ts }}\",\n  \"text\": \"🚨 ESCALATED: Incident {{ $('Clean & Sanitize Inputs').item.json.incident_id }}\",\n  \"blocks\": [\n    {\n      \"type\": \"header\",\n      \"text\": {\n        \"type\": \"plain_text\",\n        \"text\": \"🚨 ESCALATED: Incident {{ $('Clean & Sanitize Inputs').item.json.incident_id }}\",\n        \"emoji\": true\n      }\n    },\n    {\n      \"type\": \"section\",\n      \"fields\": [\n        {\n          \"type\": \"mrkdwn\",\n          \"text\": \"*👤 Customer:*\\n{{ ($('Lookup Customer').item.json.fields?.Customer_Name || 'Unknown customer') }} ({{ ($('Lookup Customer').item.json.fields?.Account_Tier || 'Unknown tier') }})\"\n        },\n        {\n          \"type\": \"mrkdwn\",\n          \"text\": \"*Status:*\\n🔴 *Escalated to Engineering*\"\n        },\n        {\n          \"type\": \"mrkdwn\",\n          \"text\": \"*Escalated Via:*\\n{{ $('Wait for Human Decision').item.json.query?.platform === 'discord' ? '🎮 Discord Bot' : '💬 Slack App' }}\"\n        },\n        {\n          \"type\": \"mrkdwn\",\n          \"text\": \"*Commander:*\\n{{ $('Wait for Human Decision').item.json.query?.approver || $('Lookup Customer').item.json.fields.Assigned_Executive || 'Marcus Sterling (Commander)' }}\"\n        },\n        {\n          \"type\": \"mrkdwn\",\n          \"text\": \"*Engineering Ticket:*\\n<{{ $('Update CRM: Escalated').item.json.fields.Engineering_Ticket_URL }}|View GitHub Issue>\"\n        },\n        {\n          \"type\": \"mrkdwn\",\n          \"text\": \"*Escalated At:*\\n{{ $now.setZone('Asia/Manila').toFormat('yyyy-MM-dd HH:mm') }}\"\n        }\n      ]\n    },\n    {\n      \"type\": \"section\",\n      \"text\": {\n        \"type\": \"mrkdwn\",\n        \"text\": \"*📝 Escalation Reason:*\\n> {{ $('Wait for Human Decision').item.json.query?.notes || 'Direct 1-Click Escalation' }}\"\n      }\n    },\n    {\n      \"type\": \"context\",\n      \"elements\": [\n        {\n          \"type\": \"mrkdwn\",\n          \"text\": \"🔒 *Card Sealed:* AI resolution rejected by Human Approver. Engineering team mobilized.\"\n        }\n      ]\n    }\n  ]\n}",
-        "options": {}
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
@@ -1415,7 +1433,13 @@
         -272
       ],
       "id": "e840e882-1008-4329-83cd-f45c825c70fb",
-      "name": "Slack Card: Escalated"
+      "name": "Slack Card: Escalated",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_ME",
+          "name": "Slack Bot Token"
+        }
+      }
     },
     {
       "parameters": {
@@ -1425,10 +1449,6 @@
         "headerParameters": {
           "parameters": [
             {
-              "name": "Authorization",
-              "value": "Bot YOUR_DISCORD_BOT_TOKEN"
-            },
-            {
               "name": "Content-Type",
               "value": "application/json"
             }
@@ -1437,7 +1457,9 @@
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n  \"embeds\": [\n    {\n      \"title\": \"🚨 ESCALATED TO ENGINEERING: {{ $('Clean & Sanitize Inputs').item.json.incident_id }}\",\n      \"color\": 15158332,\n      \"description\": \"AI resolution rejected. Engineering ticket provisioned.\",\n      \"author\": {\n        \"name\": \"AURA DIGITAL OPERATIONS • INCIDENT TRIAGE\",\n        \"icon_url\": \"https://img.icons8.com/fluency/48/bot.png\"\n      },\n      \"fields\": [\n        {\n          \"name\": \"👤 Customer\",\n          \"value\": \"{{ ($('Lookup Customer').item.json.fields?.Customer_Name || 'Unknown customer') }} ({{ ($('Lookup Customer').item.json.fields?.Account_Tier || 'Unknown tier') }})\",\n          \"inline\": true\n        },\n        {\n          \"name\": \"Status\",\n          \"value\": \"🔴 `Escalated to Execs`\",\n          \"inline\": true\n        },\n        {\n          \"name\": \"📱 Escalated Via\",\n          \"value\": \"{{ $('Wait for Human Decision').item.json.query?.platform === 'discord' ? 'Discord Bot' : 'Slack App' }}\",\n          \"inline\": true\n        },\n        {\n          \"name\": \"👤 Commander\",\n          \"value\": \"{{ $('Wait for Human Decision').item.json.query?.approver || $('Lookup Customer').item.json.fields.Assigned_Executive || 'Marcus Sterling (Commander)' }}\",\n          \"inline\": true\n        },\n        {\n          \"name\": \"📂 Category\",\n          \"value\": \"`{{ $('AI Incident Analyst').item.json.output.category }}`\",\n          \"inline\": true\n        },\n        {\n          \"name\": \"Engineering Issue\",\n          \"value\": \"👉 [Open GitHub Bug Ticket]({{ $('Update CRM: Escalated').item.json.fields.Engineering_Ticket_URL }})\",\n          \"inline\": true\n        },\n        {\n          \"name\": \"📝 Escalation Reason\",\n          \"value\": \"```\\n{{ $('Wait for Human Decision').item.json.query?.notes || 'Direct 1-Click Escalation' }}\\n```\"\n        }\n      ],\n      \"footer\": {\n        \"text\": \"Aura Autonomous Platform • Card Sealed (Engineering On-Call Assigned)\",\n        \"icon_url\": \"https://img.icons8.com/fluency/48/lock.png\"\n      }\n    }\n  ],\n  \"components\": []\n}",
-        "options": {}
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
@@ -1446,7 +1468,13 @@
         -272
       ],
       "id": "afbce605-02d4-471b-8aa6-bc1947e0a62c",
-      "name": "Discord Card: Escalated"
+      "name": "Discord Card: Escalated",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_ME",
+          "name": "Discord Bot"
+        }
+      }
     },
     {
       "parameters": {
