@@ -27,6 +27,7 @@ The obvious fix, "let an AI answer everything", is worse. An unsupervised model 
 - Anything that is a **P1 outage or a churn threat** pauses for a human decision in Slack or Discord. The run is suspended, not abandoned, and resumes when someone clicks.
 - Engineering gets a GitHub issue and an alert only when a person chooses to escalate.
 - If any step fails, a dead-letter workflow records it and alerts on-call. Nothing fails silently.
+- Tested on 100 synthetic incidents with the expected outcome written down first: every one took the right path, all 12 P1 and churn-threat cases paused for a person, and 4 of 4 deliberate failures were caught and alerted.
 
 ---
 
@@ -157,6 +158,19 @@ Airtable base with three tables used by this flow.
 
 
 ## Testing and verification
+
+**Results.** 100 synthetic incidents were sent through the live webhook (billing, access, how-to, feature requests, outage and churn threats, hostile text, unknown customers). The expected route for each was written down before sending.
+
+| Measure | Result |
+|---|---|
+| Routed to the correct path (auto-resolve or human approval) | 100 of 100 |
+| P1 and churn-threat incidents paused for a person | 12 of 12 |
+| Routine incidents wrongly escalated | 0 of 88 |
+| Hostile or odd text (quotes, HTML, formula, very long, unicode) handled | 6 of 6 |
+| Customers not in the CRM handled | 6 of 6 |
+| Intake to resolved, auto-resolved incidents | median 14 s over 88 runs |
+| Approval click to resolved | 3 to 4 s |
+| Deliberate failures logged and alerted in two channels | 4 of 4, within 4 s |
 
 [`samples/incident-intake.json`](samples/incident-intake.json) is a ready payload. Send it with the secret header and watch the execution; the path taken depends on the analysis. Paths exercised end to end on the running workflow:
 
