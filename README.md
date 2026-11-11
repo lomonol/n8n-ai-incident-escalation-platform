@@ -188,13 +188,13 @@ Each fix below was applied to the live workflow and checked with a real executio
 - **Human-approval path verified with an unknown customer.** I had suspected the cards would error when the customer is not in the CRM. Running a P1 incident end to end showed they do not: both approval cards posted, the run paused, a signed approval resumed it, the cards updated, the customer was emailed and the execution finished with status success. The only defect is the blank customer name, listed below. This run also exercised the `Approval Card Posted?` check from the other side (card was posted, so card updates ran).
 - **Unknown customers show as "Unknown customer" on cards.** Eleven card, alert and confirmation nodes now fall back to `Unknown customer` / `Unknown tier` instead of rendering blank. Verified on the approval card from a real run (`Customer: Unknown customer (Unknown tier)`). The escalation path was then run end to end as well: the escalated card updates, both engineering alerts and the confirmation page ran, the page showed `Unknown customer`, and the execution finished with status success. The ticket step posted to a mock endpoint, not a real repo. The approved card update was last run before this edit.
 - **Approval card no longer names a model.** The Slack card said "Triaged by Claude 3.5 Sonnet" while the analyst node runs OpenRouter's `openrouter/free` router, which can serve different models. The text now says "Triaged by AI analyst". Verified by reading the published node back and confirming the new text is live. Not re-run, since it is a static string.
+- **Knowledge base is keyword-filtered, not dumped whole.** Every article used to go into the prompt. The prompt now includes only the top three articles whose keywords share words with the incident's subject and message, or an explicit "no matching article, do not invent a solution" line. Checked the matching logic offline against the real five articles (password, invoice, rate-limit, webhook and an outage message that correctly matches nothing), then ran a live invoice question: the prompt got smaller (782 input tokens against 1,101 for an unfiltered run), and the resolution cited the billing article and its exact portal path. Word matching is crude: no stemming or synonyms, so "cancelling" will not match "cancel". Embeddings are the next step once the KB is large.
 
 ## What I would fix next
 
 I audited my own build before publishing it. These are real defects, in priority order:
 
 1. **Secrets live in node parameters.** The shared secret and some tokens were pasted into HTTP/IF nodes. They belong in n8n credentials. (They are stripped from this export; rotate anything that was ever pasted.)
-2. **Whole-table knowledge base.** Every KB article goes into the prompt. That is fine for a small KB and does not scale; the next step is retrieval (keyword filter, then embeddings).
 
 ## Configuration and swap-ins
 
@@ -209,7 +209,7 @@ Everything below is a setting or a node swap, not a rewrite. The defaults are wh
 | **CRM / database** | Airtable | Supabase, Postgres, HubSpot, Notion, Google Sheets. Replace the Airtable nodes and keep the field names. |
 | **Customer email** | Resend | Gmail, SMTP, SendGrid, Postmark. |
 | **Ticketing** | GitHub Issues through the REST API (retries 3 times; the CRM stores the real issue URL) | Jira, Linear, GitLab, ClickUp. Change the URL, auth and body of that one node. |
-| **Knowledge base** | Whole table sent in the prompt | A filtered search or a vector store when the KB grows. |
+| **Knowledge base** | Keyword-filtered, top 3 in the prompt | A vector store when the KB grows. |
 | **Timezone and ID format** | Fixed timezone, `INC-YYYY-NNNNNN` | Any. |
 
 ## What this demonstrates
