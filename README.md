@@ -12,8 +12,6 @@
 | **Stack** | n8n, OpenRouter (LLM), Airtable, Resend, Slack API, Discord API, GitHub Issues API |
 | **Status** | Runs end to end on sample data. |
 
-> **If you only read one section:** [Why this is interesting](#why-this-is-interesting) and the [Decision log](#decision-log).
-
 ---
 
 ## The problem
@@ -29,13 +27,6 @@ The obvious fix, "let an AI answer everything", is worse. An unsupervised model 
 - Anything that is a **P1 outage or a churn threat** pauses for a human decision in Slack or Discord. The run is suspended, not abandoned, and resumes when someone clicks.
 - Engineering gets a GitHub issue and an alert only when a person chooses to escalate.
 - If any step fails, a dead-letter workflow records it and alerts on-call. Nothing fails silently.
-
-## Why this is interesting
-
-1. **Autonomy is tiered by risk, not switched on or off.** The model never decides *whether* a human is needed; a deterministic rule on its structured output does. See [Decision 1](#decision-1-risk-tiered-autonomy-not-all-or-nothing).
-2. **The model returns a typed object, not prose.** Enums for category, urgency and churn risk mean the workflow can branch on the result safely.
-3. **The run can wait.** A Wait node suspends the execution and a Slack button resumes it, so a human decision can take minutes or hours without holding a worker or losing state.
-4. **Every path was exercised.** Auto-resolve, human approval, escalation and an unknown customer were each run end to end. See [Testing and verification](#testing-and-verification).
 
 ---
 
