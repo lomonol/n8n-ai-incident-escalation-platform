@@ -10,7 +10,7 @@
 | **My role** | Sole designer and builder: workflow design, prompt and schema design, integrations, failure handling |
 | **Scale** | 3 workflows, 30 nodes in the main flow, 4 external systems, 2 chat platforms |
 | **Stack** | n8n, OpenRouter (LLM), Airtable, Resend, Slack API, Discord API, GitHub Issues API |
-| **Status** | Runs end to end on sample data. |
+| **Status** | Runs end to end on sample data; tested on 100 synthetic incidents (results below). |
 
 ---
 
@@ -176,7 +176,7 @@ Airtable base with three tables used by this flow.
 
 - **Routine question** (password reset, invoice copy): auto-resolved, the customer is emailed at the incident's own address, the incident is logged.
 - **P1 outage with a churn threat:** approval cards post to Slack and Discord, the run pauses, and a signed approval resumes it to Resolved.
-- **Escalation:** the same incident escalated instead opens the engineering ticket, alerts the team and updates both cards.
+- **Escalation:** the same incident escalated instead raises the engineering ticket, alerts the team and updates both cards (the ticket call was exercised against a mock endpoint; the export targets the GitHub Issues API).
 - **Customer not in the CRM:** the run continues with defaults and the cards read `Unknown customer`.
 - **Hostile input:** an email containing a quote is escaped before it reaches the Airtable filter formula.
 - **Unique IDs:** each incident ID is derived from the n8n execution ID.
