@@ -26,7 +26,7 @@ The obvious fix, "let an AI answer everything", is worse. An unsupervised model 
 - Routine incidents (general questions, standard billing) are resolved automatically.
 - Anything that is a **P1 outage or a churn threat** pauses for a human decision in Slack or Discord. The run is suspended, not abandoned, and resumes when someone clicks.
 - Engineering gets a GitHub issue and an alert only when a person chooses to escalate.
-- If any step fails, a dead-letter workflow records it and alerts on-call. Nothing fails silently.
+- If any step fails, a dead-letter workflow records it and alerts on-call in Slack and Discord.
 - Tested on 100 synthetic incidents with the expected outcome written down first: every one took the right path, all 12 P1 and churn-threat cases paused for a person, and 4 of 4 deliberate failures were caught and alerted.
 
 ---
@@ -35,22 +35,22 @@ The obvious fix, "let an AI answer everything", is worse. An unsupervised model 
 
 ```mermaid
 flowchart TD
-  A[POST /incident-intake] --> B{Secret header valid?}
-  B -- no --> X[401, nothing else runs]
-  B -- yes --> R[200 accepted, immediately]
-  R --> C[Sanitize: strip HTML, normalize email, mint incident ID]
-  C --> D[Customer lookup, Airtable]
-  D --> E[Fetch knowledge base, Airtable]
-  E --> F[LLM incident analyst<br/>typed JSON output]
-  F --> G[(Create incident record)]
-  G --> H{P1 or High Churn Threat?}
-  H -- no --> AUTO[Status: Auto-Resolved<br/>email customer]
-  H -- yes --> J[Approval card: Slack + Discord]
-  J --> K[Wait node, up to 24h]
-  K --> L{Human decision}
-  L -- approve --> M[CRM: Resolved, email customer, update both cards]
-  L -- escalate --> N[CRM: Escalated, create engineering ticket, alert engineers, update both cards]
-  Z[Any node fails] -.-> DLQ[Error workflow: snapshot to Airtable DLQ, alert DevOps]
+  A["POST /incident-intake"] --> B{"Secret header valid?"}
+  B -- no --> X["401, nothing else runs"]
+  B -- yes --> R["200 accepted, immediately"]
+  R --> C["Sanitize: strip HTML, normalize email, mint incident ID"]
+  C --> D["Customer lookup, Airtable"]
+  D --> E["Fetch knowledge base, Airtable"]
+  E --> F["LLM incident analyst<br/>typed JSON output"]
+  F --> G[("Create incident record")]
+  G --> H{"P1 or High Churn Threat?"}
+  H -- no --> AUTO["Status: Auto-Resolved<br/>email customer"]
+  H -- yes --> J["Approval card: Slack + Discord"]
+  J --> K["Wait node, up to 24h"]
+  K --> L{"Human decision"}
+  L -- approve --> M["CRM: Resolved, email customer, update both cards"]
+  L -- escalate --> N["CRM: Escalated, create engineering ticket, alert engineers, update both cards"]
+  Z["Any node fails"] -.-> DLQ["Error workflow: snapshot to Airtable DLQ, alert DevOps"]
 ```
 
 ### Stage by stage
@@ -159,18 +159,33 @@ Airtable base with three tables used by this flow.
 
 ## Testing and verification
 
-**Results.** 100 synthetic incidents were sent through the live webhook (billing, access, how-to, feature requests, outage and churn threats, hostile text, unknown customers). The expected route for each was written down before sending.
+**How it was tested.** 100 synthetic incidents, each labeled with its expected category, route and churn flag before sending, were posted to the live webhook in random order, one every 15 seconds. The mix: 26 billing, 32 general questions, 12 feature requests, 8 P1 outages with a churn threat, 4 angry billing or churn messages, 6 hostile inputs, 6 senders not in the CRM and 6 very short or non-English messages. The analyst was a small self-hosted LLM on a CPU-only VM. The customer email step was switched off for this run; delivery was checked on separate runs. Single run, one reviewer's labels.
 
 | Measure | Result |
 |---|---|
+| Incidents accepted by the webhook | 100 of 100 (a wrong secret is rejected with `401`) |
 | Routed to the correct path (auto-resolve or human approval) | 100 of 100 |
 | P1 and churn-threat incidents paused for a person | 12 of 12 |
 | Routine incidents wrongly escalated | 0 of 88 |
+| Churn threats flagged by the model | 11 of 12, no false flags in 88 |
+| Category matches the hand label | 91 of 100 |
 | Hostile or odd text (quotes, HTML, formula, very long, unicode) handled | 6 of 6 |
 | Customers not in the CRM handled | 6 of 6 |
-| Intake to resolved, auto-resolved incidents | median 14 s over 88 runs |
-| Approval click to resolved | 3 to 4 s |
-| Deliberate failures logged and alerted in two channels | 4 of 4, within 4 s |
+| Auto-resolved runs completed | 88 of 88 |
+| Webhook acknowledgement | about 1 to 2 s |
+| Intake to resolved, first 40 runs (unloaded) | median 11.3 s, 90th percentile 12.5 s |
+| Intake to resolved, all runs | median 13.8 s, 90th percentile 90 s, slowest 212 s (see below) |
+| Intake to approval card, unloaded | about 13 s (3 runs) |
+| Approval click to resolved | about 3 s (3 of 3 approvals); about 4 s for an escalation |
+| Deliberate failures (5 malformed requests) | 4 caused a failure; the dead-letter workflow logged and alerted all 4 in both channels within 2 to 4 s. The fifth was processed normally. |
+
+### What did not go perfectly
+
+- **Speed under sustained load.** After about 50 consecutive runs at one every 15 seconds, the self-hosted model slowed: the 90th percentile rose to 90 s and late approval cards took 22 to 94 s. Cause: CPU-only inference on a small VM. A hosted model or a GPU removes it; nothing in the workflow changes.
+- **Category, 9 of 100 differ from the hand label.** Policy questions were labeled by topic, a few requests sat between FAQ and feature request, and 3 of the 8 P1 outages were labeled billing or general FAQ. All 8 P1 outages still paused for a person, because the gate keys on urgency, not category.
+- **One churn threat not flagged.** A P1 data-sync complaint came back as `Normal` churn risk. It still reached a person through the P1 rule.
+- **Approval cards with multi-paragraph drafts.** In the 100-incident run, 2 of 12 approval cards failed to post: raw line breaks in the AI draft made the card's JSON body invalid. Both incidents were still recorded as Pending Human Approval. In this export the approval cards, the engineering ticket and the dead-letter alerts build their bodies with JSON serialization; on a re-test, 6 of 6 approval cases with multi-paragraph drafts posted and reached the waiting state, and 2 of 2 escalations completed.
+- **Scope.** Synthetic, single-run data: treat these figures as a regression baseline, not production accuracy.
 
 [`samples/incident-intake.json`](samples/incident-intake.json) is a ready payload. Send it with the secret header and watch the execution; the path taken depends on the analysis. Paths exercised end to end on the running workflow:
 
@@ -198,7 +213,7 @@ Everything below is a setting or a node swap, not a rewrite. The defaults are wh
 | **Knowledge base** | Keyword-filtered, top 3 in the prompt | A vector store when the KB grows. |
 | **Timezone and ID format** | Fixed timezone, `INC-YYYY-NNNNNN` | Any. |
 
-## What this demonstrates
+## Skills used
 
 - Designing **human-in-the-loop** systems where autonomy is bounded by explicit policy.
 - **Structured LLM output** used as a routing input, with closed enums.
