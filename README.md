@@ -219,7 +219,7 @@ Everything below is a setting or a node swap, not a rewrite. The defaults are wh
 
    ```bash
    curl -X POST https://YOUR-N8N-HOST/webhook/incident-intake \
-     -H "x-aura-secret-key: YOUR_SHARED_SECRET" \
+     -H "x-intake-secret: YOUR_SHARED_SECRET" \
      -H "Content-Type: application/json" \
      -d @samples/incident-intake.json
    ```

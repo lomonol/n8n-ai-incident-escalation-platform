@@ -524,7 +524,7 @@
           "conditions": [
             {
               "id": "5d295c77-eccb-468b-8f40-bb26b7ec6670",
-              "leftValue": "={{ $json.headers['x-aura-secret-key'] }}",
+              "leftValue": "={{ $json.headers['x-intake-secret'] }}",
               "rightValue": "YOUR_SHARED_SECRET",
               "operator": {
                 "type": "string",
@@ -548,7 +548,7 @@
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "{\n  \"error\": \"Unauthorized\",\n  \"message\": \"Invalid or missing X-Aura-Secret-Key header. Incident rejected.\"\n}",
+        "responseBody": "{\n  \"error\": \"Unauthorized\",\n  \"message\": \"Invalid or missing X-Intake-Secret header. Incident rejected.\"\n}",
         "options": {
           "responseCode": 401
         }
