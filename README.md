@@ -1,4 +1,4 @@
-# Case Study: Autonomous Incident Platform
+# Case Study: AI Incident Triage and Escalation
 
 **An n8n system that triages customer incidents with an LLM, resolves the low-risk ones on its own, and stops to ask a human before anything high-risk goes out.**
 
